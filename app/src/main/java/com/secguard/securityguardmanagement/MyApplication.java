@@ -7,6 +7,8 @@ import android.os.Build;
 
 public class MyApplication extends Application {
 
+    private String guardId;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -17,5 +19,14 @@ public class MyApplication extends Application {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
+    }
+    // Setter for guard_id
+    public void setGuardId(String guardId) {
+        this.guardId = guardId;
+    }
+
+    // Getter for guard_id
+    public String getGuardId() {
+        return guardId;
     }
 }

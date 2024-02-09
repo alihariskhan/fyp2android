@@ -17,7 +17,7 @@ public class splash_activity extends AppCompatActivity {
         // Use a Handler to delay the transition to the main activity
         new Handler().postDelayed(() -> {
             // Start your app's main activity
-            Intent intent = new Intent(splash_activity.this, MainActivity.class);
+            Intent intent = new Intent(splash_activity.this, login_activity.class);
             startActivity(intent);
 
             // Close this activity

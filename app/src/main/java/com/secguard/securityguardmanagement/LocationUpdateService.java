@@ -13,7 +13,6 @@ import android.os.AsyncTask;
 import android.os.IBinder;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -36,7 +35,7 @@ public class LocationUpdateService extends Service {
 
     private static final String TAG = "LocationUpdateService";
     private static final int NOTIFICATION_ID = 123;
-    private static final String LOCATION_UPDATE_ACTION = "com.shah.securityguard.LOCATION_UPDATE_ACTION";
+    private static final String LOCATION_UPDATE_ACTION = "com.shah.security-guard.LOCATION_UPDATE_ACTION";
     private FusedLocationProviderClient fusedLocationClient;
     private BroadcastReceiver locationUpdateReceiver;
 
@@ -66,7 +65,7 @@ public class LocationUpdateService extends Service {
         return null;
     }
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint({"MissingPermission", "VisibleForTests"})
     private void startLocationUpdates() {
         LocationRequest locationRequest = new LocationRequest();
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -124,7 +123,8 @@ public class LocationUpdateService extends Service {
     }
 
     private void handleLocationData(double latitude, double longitude) {
-        String guardId = "8001";
+        MyApplication myapp = (MyApplication) getApplication();
+        String guardId = myapp.getGuardId();
         JSONObject locationData = new JSONObject();
 
         try {
@@ -149,7 +149,7 @@ public class LocationUpdateService extends Service {
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                String serverUrl = "http://192.168.0.221/SecurityGuardManagement/gps_tracking.php";
+                String serverUrl = "http://192.168.2.219/SecurityGuardManagement/gps_tracking.php";
 
                 URL url = new URL(serverUrl);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();

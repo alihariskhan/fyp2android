@@ -20,9 +20,11 @@ public class MainActivity extends AppCompatActivity {
 
         Button allowButton = findViewById(R.id.allowButton);
         Button stopButton = findViewById(R.id.stopButton);
+        Button logoutButton = findViewById(R.id.logoutButton);
 
         allowButton.setOnClickListener(view -> requestLocationPermissionAndStartService());
         stopButton.setOnClickListener(view -> stopLocationService());
+        logoutButton.setOnClickListener(view -> logout());
     }
 
     private void requestLocationPermissionAndStartService() {
@@ -42,6 +44,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void stopLocationService() {
         stopService(new Intent(this, LocationUpdateService.class));
+    }
+
+    private void logout() {
+        // Clear any stored session information (e.g., guard_id)
+        MyApplication myApp = (MyApplication) getApplication();
+        myApp.setGuardId(null);
+
+        // Navigate to the login screen
+        Intent intent = new Intent(MainActivity.this, login_activity.class);
+        startActivity(intent);
+        finish(); // Finish the current activity to prevent going back to it from the login screen
     }
 
     // Handle permission result
