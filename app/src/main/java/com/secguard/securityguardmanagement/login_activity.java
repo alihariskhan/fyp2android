@@ -25,9 +25,18 @@ public class login_activity extends AppCompatActivity {
     private EditText editTextGuardId, editTextPassword;
     private String loggedInGuardId;
 
+    private SessionManager sessionManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Check if the user is already logged in
+        sessionManager = new SessionManager(this);
+        if (sessionManager.getGuardId() != null) {
+            startMainActivity();
+            return;
+        }
         setContentView(R.layout.activity_login);
 
         editTextGuardId = findViewById(R.id.editTextGuardId);
@@ -60,6 +69,13 @@ public class login_activity extends AppCompatActivity {
         });
     }
 
+    private void startMainActivity() {
+        Intent intent = new Intent(login_activity.this, MainActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+
     private class LoginTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... params) {
@@ -68,7 +84,7 @@ public class login_activity extends AppCompatActivity {
 
             try {
                 // Set up the connection
-                URL url = new URL("http://192.168.2.219/SecurityGuardManagement/login.php");
+                URL url = new URL("http://192.168.76.199/SecurityGuardManagement/login.php");
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("POST");
                 urlConnection.setDoOutput(true);
@@ -106,19 +122,20 @@ public class login_activity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        // Override the back button behavior if you don't want to go back to MainActivity after login
+        moveTaskToBack(true);
+    }
+
     private void handleLoginResult(String result) {
         // Handle the result from the server
         if (result.equals("Login successful")) {
             // Save user info in SharedPreferences
-            SharedPreferences preferences = getSharedPreferences("user_data", MODE_PRIVATE);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("guard_id", editTextGuardId.getText().toString().trim());
-            editor.apply();
+            sessionManager.setGuardId(editTextGuardId.getText().toString().trim());
 
-            // Store guard_id in the class variable
-            loggedInGuardId = editTextGuardId.getText().toString().trim();
-            MyApplication myApp = (MyApplication) getApplication();
-            myApp.setGuardId(loggedInGuardId);
+            // Start the main activity
+            startMainActivity();
 
             // Start the main activity or perform other actions
             Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();

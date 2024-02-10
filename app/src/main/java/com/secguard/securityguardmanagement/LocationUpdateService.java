@@ -39,6 +39,8 @@ public class LocationUpdateService extends Service {
     private FusedLocationProviderClient fusedLocationClient;
     private BroadcastReceiver locationUpdateReceiver;
 
+    private SessionManager sessionManager;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -123,8 +125,8 @@ public class LocationUpdateService extends Service {
     }
 
     private void handleLocationData(double latitude, double longitude) {
-        MyApplication myapp = (MyApplication) getApplication();
-        String guardId = myapp.getGuardId();
+        sessionManager = new SessionManager(this);
+        String guardId = sessionManager.getGuardId();
         JSONObject locationData = new JSONObject();
 
         try {
@@ -149,7 +151,7 @@ public class LocationUpdateService extends Service {
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                String serverUrl = "http://192.168.2.219/SecurityGuardManagement/gps_tracking.php";
+                String serverUrl = "http://192.168.76.199/SecurityGuardManagement/gps_tracking.php";
 
                 URL url = new URL(serverUrl);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();

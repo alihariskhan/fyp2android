@@ -13,9 +13,19 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 123;
 
+    private SessionManager sessionManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        sessionManager = new SessionManager(this);
+        if (sessionManager.getGuardId() == null) {
+            Intent intent = new Intent(MainActivity.this, login_activity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
         setContentView(R.layout.activity_main);
 
         Button allowButton = findViewById(R.id.allowButton);
@@ -47,14 +57,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void logout() {
-        // Clear any stored session information (e.g., guard_id)
-        MyApplication myApp = (MyApplication) getApplication();
-        myApp.setGuardId(null);
+        // Clear session information using SessionManager
+        stopService(new Intent(this, LocationUpdateService.class));
+        sessionManager.clearSession();
 
         // Navigate to the login screen
         Intent intent = new Intent(MainActivity.this, login_activity.class);
         startActivity(intent);
-        finish(); // Finish the current activity to prevent going back to it from the login screen
+        finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        // Override the back button behavior if you don't want to go back to MainActivity after login
+        moveTaskToBack(true);
     }
 
     // Handle permission result
