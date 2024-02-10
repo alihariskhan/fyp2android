@@ -2,12 +2,26 @@ package com.secguard.securityguardmanagement;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import android.os.AsyncTask;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
             finish();
             return;
         }
+
         setContentView(R.layout.activity_main);
 
         Button allowButton = findViewById(R.id.allowButton);
@@ -49,11 +64,74 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startLocationService() {
+        String currentDateTime = getCurrentDateTime();
+        new SendDateTimeTask().execute(currentDateTime, "start");
         startService(new Intent(this, LocationUpdateService.class));
     }
 
     private void stopLocationService() {
+        String currentDateTime = getCurrentDateTime();
+        new SendDateTimeTask().execute(currentDateTime, "stop");
         stopService(new Intent(this, LocationUpdateService.class));
+    }
+
+    private String getCurrentDateTime() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        return sdf.format(new Date());
+    }
+
+    private class SendDateTimeTask extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(String... params) {
+            String dateTime = params[0];
+            String action = params[1];
+            sendDateTimeToServer(dateTime, action);
+            return null;
+        }
+
+        private void sendDateTimeToServer(String dateTime, String action) {
+            try {
+                URL url = new URL("https://192.168.76.199/SecurityGuardManagement/details.php");
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("POST");
+                urlConnection.setRequestProperty("Content-Type", "application/json");
+                urlConnection.setDoOutput(true);
+
+                String guardId = sessionManager.getGuardId();
+
+                // Create a JSON object to hold the data
+                JSONObject jsonParams = new JSONObject();
+                jsonParams.put("guardId", guardId);
+                jsonParams.put("datetime", dateTime);
+                jsonParams.put("action", action);
+
+                // Convert the JSON object to a string
+                String postData = jsonParams.toString();
+
+                // Send data to the server
+                OutputStream os = urlConnection.getOutputStream();
+                os.write(postData.getBytes());
+                os.flush();
+                os.close();
+
+                int responseCode = urlConnection.getResponseCode();
+                Log.d("HTTP Response", "Response Code: " + responseCode);
+
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    // Successfully sent data to the server
+                    Log.d("HTTP Response", "Data sent successfully");
+                } else {
+                    // Handle the error
+                    Log.e("HTTP Error", "HTTP error code: " + responseCode);
+                }
+
+                urlConnection.disconnect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private void logout() {
