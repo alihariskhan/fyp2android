@@ -32,7 +32,7 @@ $result = $conn->query($checkQuery);
 
 if ($result->num_rows > 0) {
     // guardId exists, perform an UPDATE
-    $updateQuery = "UPDATE gps_tracking SET latitude='$latitude', longitude='$longitude' WHERE guard_id = '$guardId'";
+    $updateQuery = "UPDATE gps_tracking SET latitude='$latitude', longitude='$longitude', start_lat = COALESCE(start_lat, '$latitude'), start_long = COALESCE(start_long, '$longitude') WHERE guard_id = '$guardId'";
     
     if ($conn->query($updateQuery) === TRUE) {
         echo "Data updated successfully";
@@ -41,7 +41,9 @@ if ($result->num_rows > 0) {
     }
 } else {
     // guardId does not exist, perform an INSERT
-    $insertQuery = "INSERT INTO gps_tracking (guard_id, latitude, longitude) VALUES ('$guardId', '$latitude', '$longitude')";
+    $insertQuery = "INSERT INTO gps_tracking (guard_id, latitude, longitude, start_lat, start_long) 
+                VALUES ('$guardId', '$latitude', '$longitude', COALESCE(start_lat, '$latitude'), COALESCE(start_long, '$longitude'))";
+
 
     if ($conn->query($insertQuery) === TRUE) {
         echo "Data inserted successfully";
