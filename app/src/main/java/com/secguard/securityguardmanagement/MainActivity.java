@@ -2,6 +2,7 @@ package com.secguard.securityguardmanagement;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Button;
 
@@ -10,8 +11,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import android.os.AsyncTask;
 
@@ -19,6 +22,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -26,6 +30,8 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
 
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 123;
+
+    private static final String TAG = "LocationUpdateService";
 
     private SessionManager sessionManager;
 
@@ -64,10 +70,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startLocationService() {
-        String currentDateTime = getCurrentDateTime();
-        new SendDateTimeTask().execute(currentDateTime, "start");
         startService(new Intent(this, LocationUpdateService.class));
+
+        // Add a delay before executing SendDateTimeTask (adjust the duration as needed)
+        new Handler().postDelayed(() -> {
+            String currentDateTime = getCurrentDateTime();
+            new SendDateTimeTask().execute(currentDateTime, "start");
+        }, 3000); // 5000 milliseconds (adjust as needed)
     }
+
 
     private void stopLocationService() {
         String currentDateTime = getCurrentDateTime();
@@ -91,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
         private void sendDateTimeToServer(String dateTime, String action) {
             try {
-                URL url = new URL("https://192.168.76.199/SecurityGuardManagement/details.php");
+                URL url = new URL("http://192.168.216.204/SecurityGuardManagement/details.php");
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("POST");
                 urlConnection.setRequestProperty("Content-Type", "application/json");
@@ -105,13 +116,19 @@ public class MainActivity extends AppCompatActivity {
                 jsonParams.put("datetime", dateTime);
                 jsonParams.put("action", action);
 
-                // Convert the JSON object to a string
-                String postData = jsonParams.toString();
+                Log.d(TAG, "Guard id is: " + guardId);
+                Log.d(TAG, "datetime is: " + dateTime);
+                Log.d(TAG, "action is: " + action);
+
+
+
 
                 // Send data to the server
                 OutputStream os = urlConnection.getOutputStream();
-                os.write(postData.getBytes());
-                os.flush();
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
+                writer.write(jsonParams.toString());
+                writer.flush();
+                writer.close();
                 os.close();
 
                 int responseCode = urlConnection.getResponseCode();

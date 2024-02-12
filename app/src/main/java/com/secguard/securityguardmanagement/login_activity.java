@@ -84,7 +84,7 @@ public class login_activity extends AppCompatActivity {
 
             try {
                 // Set up the connection
-                URL url = new URL("http://192.168.76.199/SecurityGuardManagement/login.php");
+                URL url = new URL("http://192.168.216.204/SecurityGuardManagement/login.php");
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("POST");
                 urlConnection.setDoOutput(true);

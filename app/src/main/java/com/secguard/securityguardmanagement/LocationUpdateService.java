@@ -151,7 +151,7 @@ public class LocationUpdateService extends Service {
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                String serverUrl = "http://192.168.76.199/SecurityGuardManagement/gps_tracking.php";
+                String serverUrl = "http://192.168.216.204/SecurityGuardManagement/gps_tracking.php";
 
                 URL url = new URL(serverUrl);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -167,7 +167,6 @@ public class LocationUpdateService extends Service {
                 outputStream.close();
 
                 int responseCode = urlConnection.getResponseCode();
-                Log.d(TAG, "Server response code: " + responseCode);
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     Log.d(TAG, "Location data sent successfully");
                 } else {
